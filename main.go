@@ -7,25 +7,18 @@ import (
 )
 
 type Board struct {
-	WhitePawn   uint64
-	WhiteKnight uint64
-	WhiteBishop uint64
-	WhiteRook   uint64
-	WhiteQueen  uint64
-	WhiteKing   uint64
-
-	BlackPawn   uint64
-	BlackKnight uint64
-	BlackBishop uint64
-	BlackRook   uint64
-	BlackQueen  uint64
-	BlackKing   uint64
-
-	Squares         [8][8]Piece
-	Flags           Flag
+	Pawns           uint64
+	Knights         uint64
+	Bishops         uint64
+	Rooks           uint64
+	Queens          uint64
+	Kings           uint64
+	WhitePieces     uint64
+	BlackPieces     uint64
 	EnPassantSquare uint8
 	HalfMoveClock   uint16
 	FullMoveCount   uint16
+	Flags           Flag
 }
 
 func (b *Board) SetFlag(flag Flag) {
@@ -49,59 +42,73 @@ func (b *Board) PutPieceAt(piece rune, rank, file int) {
 
 	// Set piece on the bitboard and 8x8 board
 	switch piece {
-	case 'p':
-		b.BlackPawn |= mask
-		b.Squares[rank-1][file-1] = BlackPawn
-	case 'n':
-		b.BlackKnight |= mask
-		b.Squares[rank-1][file-1] = BlackKnight
-	case 'b':
-		b.BlackBishop |= mask
-		b.Squares[rank-1][file-1] = BlackBishop
-	case 'r':
-		b.BlackRook |= mask
-		b.Squares[rank-1][file-1] = BlackRook
-	case 'q':
-		b.BlackQueen |= mask
-		b.Squares[rank-1][file-1] = BlackQueen
-	case 'k':
-		b.BlackKing |= mask
-		b.Squares[rank-1][file-1] = BlackKing
-	case 'P':
-		b.WhitePawn |= mask
-		b.Squares[rank-1][file-1] = WhitePawn
-	case 'N':
-		b.WhiteKnight |= mask
-		b.Squares[rank-1][file-1] = WhiteKnight
-	case 'B':
-		b.WhiteBishop |= mask
-		b.Squares[rank-1][file-1] = WhiteBishop
-	case 'R':
-		b.WhiteRook |= mask
-		b.Squares[rank-1][file-1] = WhiteRook
-	case 'Q':
-		b.WhiteQueen |= mask
-		b.Squares[rank-1][file-1] = WhiteQueen
-	case 'K':
-		b.WhiteKing |= mask
-		b.Squares[rank-1][file-1] = WhiteKing
+	case 'p', 'P':
+		b.Pawns |= mask
+	case 'n', 'N':
+		b.Knights |= mask
+	case 'b', 'B':
+		b.Bishops |= mask
+	case 'r', 'R':
+		b.Rooks |= mask
+	case 'q', 'Q':
+		b.Queens |= mask
+	case 'k', 'K':
+		b.Kings |= mask
+	}
+
+	if piece >= 'a' {
+		b.BlackPieces |= mask
+	} else {
+		b.WhitePieces |= mask
 	}
 }
 
 func (b *Board) Print() {
-	for rank := 8; rank > 0; rank-- {
-		fmt.Printf("%d ", rank)
-		for _, piece := range b.Squares[rank-1] {
-			char := PieceToUnicodeMap[piece]
-			// highlight empty black squares
-			// if char == ' ' && (rank+file+1)%2 == 0 {
-			// 	char = '.'
-			// }
-			fmt.Printf("%c ", char)
+	pieces := b.Pawns | b.Knights | b.Bishops | b.Rooks | b.Queens | b.Kings
+	for i := 63; i >= 0; i-- {
+		var c rune
+		piece := pieces & (1 << i)
+
+		switch {
+		case piece&b.Pawns&b.WhitePieces != 0:
+			c = PieceToUnicodeMap[WhitePawn]
+		case piece&b.Knights&b.WhitePieces != 0:
+			c = PieceToUnicodeMap[WhiteKnight]
+		case piece&b.Bishops&b.WhitePieces != 0:
+			c = PieceToUnicodeMap[WhiteBishop]
+		case piece&b.Rooks&b.WhitePieces != 0:
+			c = PieceToUnicodeMap[WhiteRook]
+		case piece&b.Queens&b.WhitePieces != 0:
+			c = PieceToUnicodeMap[WhiteQueen]
+		case piece&b.Kings&b.WhitePieces != 0:
+			c = PieceToUnicodeMap[WhiteKing]
+
+		case piece&b.Pawns&b.BlackPieces != 0:
+			c = PieceToUnicodeMap[BlackPawn]
+		case piece&b.Knights&b.BlackPieces != 0:
+			c = PieceToUnicodeMap[BlackKnight]
+		case piece&b.Bishops&b.BlackPieces != 0:
+			c = PieceToUnicodeMap[BlackBishop]
+		case piece&b.Rooks&b.BlackPieces != 0:
+			c = PieceToUnicodeMap[BlackRook]
+		case piece&b.Queens&b.BlackPieces != 0:
+			c = PieceToUnicodeMap[BlackQueen]
+		case piece&b.Kings&b.BlackPieces != 0:
+			c = PieceToUnicodeMap[BlackKing]
+
+		default:
+			c = PieceToUnicodeMap[EmptySquare]
 		}
-		fmt.Println()
+
+		if (i+1)%8 == 0 {
+			if i != 63 {
+				fmt.Printf("\n")
+			}
+			fmt.Printf("%d ", (i+1)/8)
+		}
+		fmt.Printf("%c ", c)
 	}
-	fmt.Println("  a b c d e f g h")
+	fmt.Println("\n  a b c d e f g h")
 }
 
 func NewBoard(fen string) (board Board) {
@@ -173,24 +180,16 @@ func NewBoard(fen string) (board Board) {
 }
 
 func main() {
-	// board := NewBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	board := NewBoard("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
+	board := NewBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	// board := NewBoard("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
 	// board := NewBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
 	// board := NewBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2")
-	fmt.Printf("%d\n", board.EnPassantSquare)
 	board.Print()
 	// fmt.Printf("%032b\n", board.Flags)
-	// fmt.Printf("%064b pawn\n", board.BlackPawn)
-	// fmt.Printf("%064b knight\n", board.BlackKnight)
-	// fmt.Printf("%064b bishop\n", board.BlackBishop)
-	// fmt.Printf("%064b rook\n", board.BlackRook)
-	// fmt.Printf("%064b king\n", board.BlackKing)
-	// fmt.Printf("%064b queen\n", board.BlackQueen)
-	// fmt.Println()
-	// fmt.Printf("%064b Pawn\n", board.WhitePawn)
-	// fmt.Printf("%064b Knight\n", board.WhiteKnight)
-	// fmt.Printf("%064b Bishop\n", board.WhiteBishop)
-	// fmt.Printf("%064b Rook\n", board.WhiteRook)
-	// fmt.Printf("%064b King\n", board.WhiteKing)
-	// fmt.Printf("%064b Queen\n", board.WhiteQueen)
+	// fmt.Printf("%064b pawn\n", board.Pawns)
+	// fmt.Printf("%064b knight\n", board.Knights)
+	// fmt.Printf("%064b bishop\n", board.Bishops)
+	// fmt.Printf("%064b rook\n", board.Rooks)
+	// fmt.Printf("%064b king\n", board.Kings)
+	// fmt.Printf("%064b queen\n", board.Queens)
 }
