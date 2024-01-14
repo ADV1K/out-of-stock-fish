@@ -9,15 +9,15 @@ const (
 )
 
 // Flags
-type Bits uint32
+type Flag uint32
 
 const (
-	WhiteToMove Bits = 1 << iota
+	WhiteToMove Flag = 1 << iota
 	WhiteKingSideCastle
 	WhiteQueenSideCastle
 	BlackKingSideCastle
 	BlackQueenSideCastle
-	EnPassantAvailable
+	// EnPassantAvailable
 	Debug
 )
 

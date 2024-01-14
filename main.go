@@ -21,25 +21,26 @@ type Board struct {
 	BlackQueen  uint64
 	BlackKing   uint64
 
-	Squares       [8][8]Piece
-	Flags         Bits
-	HalfMoveClock uint16
-	FullMoveCount uint16
+	Squares         [8][8]Piece
+	Flags           Flag
+	EnPassantSquare uint8
+	HalfMoveClock   uint16
+	FullMoveCount   uint16
 }
 
-func (b *Board) SetFlag(flag Bits) {
+func (b *Board) SetFlag(flag Flag) {
 	b.Flags |= flag
 }
 
-func (b *Board) ClearFlag(flag Bits) {
+func (b *Board) ClearFlag(flag Flag) {
 	b.Flags &= ^flag
 }
 
-func (b *Board) ToggleFlag(flag Bits) {
+func (b *Board) ToggleFlag(flag Flag) {
 	b.Flags ^= flag
 }
 
-func (b *Board) HasFlag(flag Bits) bool {
+func (b *Board) HasFlag(flag Flag) bool {
 	return b.Flags&flag != 0
 }
 
@@ -151,7 +152,7 @@ func NewBoard(fen string) (board Board) {
 
 	// En Passant Availability
 	if parts[3] != "-" {
-		board.SetFlag(EnPassantAvailable)
+		board.EnPassantSquare = (parts[3][0] - 'a') + (parts[3][1]-'1')*8
 	}
 
 	// HalfMoveClock
@@ -176,6 +177,7 @@ func main() {
 	board := NewBoard("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
 	// board := NewBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
 	// board := NewBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2")
+	fmt.Printf("%d\n", board.EnPassantSquare)
 	board.Print()
 	// fmt.Printf("%032b\n", board.Flags)
 	// fmt.Printf("%064b pawn\n", board.BlackPawn)
