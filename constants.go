@@ -9,7 +9,7 @@ const (
 )
 
 // Flags
-type Flag uint32
+type Flag uint16
 
 const (
 	WhiteToMove Flag = 1 << iota
@@ -17,7 +17,6 @@ const (
 	WhiteQueenSideCastle
 	BlackKingSideCastle
 	BlackQueenSideCastle
-	// EnPassantAvailable
 	Debug
 )
 
@@ -43,7 +42,7 @@ const (
 )
 
 var PieceToUnicodeMap = map[Piece]rune{
-	EmptySquare: ' ',
+	EmptySquare: '.',
 	WhitePawn:   '♙',
 	WhiteKnight: '♘',
 	WhiteBishop: '♗',

@@ -38,6 +38,7 @@ func (b *Board) HasFlag(flag Flag) bool {
 }
 
 func (b *Board) PutPieceAt(piece rune, rank, file int) {
+	// A1 = 1 << 0, H8 = 1 << 63
 	var mask uint64 = 1 << ((rank-1)*8 + file - 1)
 
 	// Set piece on the bitboard and 8x8 board
@@ -56,6 +57,7 @@ func (b *Board) PutPieceAt(piece rune, rank, file int) {
 		b.Kings |= mask
 	}
 
+	// lowercase pieces are black, uppercase are white.
 	if piece >= 'a' {
 		b.BlackPieces |= mask
 	} else {
@@ -65,48 +67,50 @@ func (b *Board) PutPieceAt(piece rune, rank, file int) {
 
 func (b *Board) Print() {
 	pieces := b.Pawns | b.Knights | b.Bishops | b.Rooks | b.Queens | b.Kings
-	for i := 63; i >= 0; i-- {
-		var c rune
-		piece := pieces & (1 << i)
+	for rank := 8; rank > 0; rank-- {
+		for file := 1; file <= 8; file++ {
+			mask := pieces & (1 << ((rank-1)*8 + file - 1))
 
-		switch {
-		case piece&b.Pawns&b.WhitePieces != 0:
-			c = PieceToUnicodeMap[WhitePawn]
-		case piece&b.Knights&b.WhitePieces != 0:
-			c = PieceToUnicodeMap[WhiteKnight]
-		case piece&b.Bishops&b.WhitePieces != 0:
-			c = PieceToUnicodeMap[WhiteBishop]
-		case piece&b.Rooks&b.WhitePieces != 0:
-			c = PieceToUnicodeMap[WhiteRook]
-		case piece&b.Queens&b.WhitePieces != 0:
-			c = PieceToUnicodeMap[WhiteQueen]
-		case piece&b.Kings&b.WhitePieces != 0:
-			c = PieceToUnicodeMap[WhiteKing]
+			var c rune
+			switch {
+			case mask&b.Pawns&b.WhitePieces != 0:
+				c = PieceToUnicodeMap[WhitePawn]
+			case mask&b.Knights&b.WhitePieces != 0:
+				c = PieceToUnicodeMap[WhiteKnight]
+			case mask&b.Bishops&b.WhitePieces != 0:
+				c = PieceToUnicodeMap[WhiteBishop]
+			case mask&b.Rooks&b.WhitePieces != 0:
+				c = PieceToUnicodeMap[WhiteRook]
+			case mask&b.Queens&b.WhitePieces != 0:
+				c = PieceToUnicodeMap[WhiteQueen]
+			case mask&b.Kings&b.WhitePieces != 0:
+				c = PieceToUnicodeMap[WhiteKing]
 
-		case piece&b.Pawns&b.BlackPieces != 0:
-			c = PieceToUnicodeMap[BlackPawn]
-		case piece&b.Knights&b.BlackPieces != 0:
-			c = PieceToUnicodeMap[BlackKnight]
-		case piece&b.Bishops&b.BlackPieces != 0:
-			c = PieceToUnicodeMap[BlackBishop]
-		case piece&b.Rooks&b.BlackPieces != 0:
-			c = PieceToUnicodeMap[BlackRook]
-		case piece&b.Queens&b.BlackPieces != 0:
-			c = PieceToUnicodeMap[BlackQueen]
-		case piece&b.Kings&b.BlackPieces != 0:
-			c = PieceToUnicodeMap[BlackKing]
+			case mask&b.Pawns&b.BlackPieces != 0:
+				c = PieceToUnicodeMap[BlackPawn]
+			case mask&b.Knights&b.BlackPieces != 0:
+				c = PieceToUnicodeMap[BlackKnight]
+			case mask&b.Bishops&b.BlackPieces != 0:
+				c = PieceToUnicodeMap[BlackBishop]
+			case mask&b.Rooks&b.BlackPieces != 0:
+				c = PieceToUnicodeMap[BlackRook]
+			case mask&b.Queens&b.BlackPieces != 0:
+				c = PieceToUnicodeMap[BlackQueen]
+			case mask&b.Kings&b.BlackPieces != 0:
+				c = PieceToUnicodeMap[BlackKing]
 
-		default:
-			c = PieceToUnicodeMap[EmptySquare]
-		}
-
-		if (i+1)%8 == 0 {
-			if i != 63 {
-				fmt.Printf("\n")
+			default:
+				c = PieceToUnicodeMap[EmptySquare]
 			}
-			fmt.Printf("%d ", (i+1)/8)
+
+			if file == 1 {
+				if rank < 8 {
+					fmt.Print("\n")
+				}
+				fmt.Printf("%d ", rank)
+			}
+			fmt.Printf("%c ", c)
 		}
-		fmt.Printf("%c ", c)
 	}
 	fmt.Println("\n  a b c d e f g h")
 }
@@ -180,8 +184,8 @@ func NewBoard(fen string) (board Board) {
 }
 
 func main() {
-	board := NewBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	// board := NewBoard("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
+	// board := NewBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	board := NewBoard("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1")
 	// board := NewBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
 	// board := NewBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2")
 	board.Print()
