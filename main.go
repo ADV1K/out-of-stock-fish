@@ -105,7 +105,7 @@ func (b *Board) Print() {
 
 			if file == 1 {
 				if rank < 8 {
-					fmt.Print("\n")
+					fmt.Println()
 				}
 				fmt.Printf("%d ", rank)
 			}

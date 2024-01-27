@@ -24,21 +24,33 @@ const (
 type Piece uint8
 
 const (
-	EmptySquare Piece = iota
+	EmptySquare Piece = 0
 
-	WhitePawn
-	WhiteKnight
-	WhiteBishop
-	WhiteRook
-	WhiteQueen
-	WhiteKing
+	Pawn   = 1
+	Knight = 2
+	Bishop = 3
+	Rook   = 4
+	Queen  = 5
+	King   = 6
 
-	BlackPawn
-	BlackKnight
-	BlackBishop
-	BlackRook
-	BlackQueen
-	BlackKing
+	WhitePiece = 8
+	BlackPiece = 16
+)
+
+const (
+	WhitePawn   = WhitePiece | Pawn
+	WhiteKnight = WhitePiece | Knight
+	WhiteBishop = WhitePiece | Bishop
+	WhiteRook   = WhitePiece | Rook
+	WhiteQueen  = WhitePiece | Queen
+	WhiteKing   = WhitePiece | King
+
+	BlackPawn   = BlackPiece | Pawn
+	BlackKnight = BlackPiece | Knight
+	BlackBishop = BlackPiece | Bishop
+	BlackRook   = BlackPiece | Rook
+	BlackQueen  = BlackPiece | Queen
+	BlackKing   = BlackPiece | King
 )
 
 var PieceToUnicodeMap = map[Piece]rune{
